@@ -52,6 +52,39 @@ class MatrixTest(unittest.TestCase):
         self.assertEqual(result["summary"]["complete_runs"], 4)
         self.assertEqual(result["summary"]["incomplete_runs"], 0)
 
+    def test_by_axis_complete(self):
+        breakdown = self.report()["by_axis"]
+        self.assertEqual(
+            breakdown["model"]["a"],
+            {"expected_runs": 2, "complete_runs": 2, "incomplete_runs": 0},
+        )
+        self.assertEqual(breakdown["model"]["b"]["complete_runs"], 2)
+        self.assertEqual(breakdown["seed"]["1"]["expected_runs"], 2)
+        self.assertEqual(breakdown["seed"]["2"]["incomplete_runs"], 0)
+
+    def test_by_axis_one_missing(self):
+        (self.base / "runs/a/seed-1/best.pt").unlink()
+        result = self.report()
+        breakdown = result["by_axis"]
+        self.assertEqual(breakdown["model"]["a"]["complete_runs"], 1)
+        self.assertEqual(breakdown["model"]["a"]["incomplete_runs"], 1)
+        self.assertEqual(breakdown["model"]["b"]["complete_runs"], 2)
+        self.assertEqual(breakdown["seed"]["1"]["incomplete_runs"], 1)
+        self.assertEqual(breakdown["seed"]["2"]["incomplete_runs"], 0)
+        self.assertEqual(
+            sum(item["complete_runs"] for item in breakdown["model"].values()),
+            result["summary"]["complete_runs"],
+        )
+
+    def test_by_axis_markdown(self):
+        (self.base / "runs/a/seed-1/best.pt").unlink()
+        output = markdown_report(self.report())
+        self.assertIn("## Coverage by axis", output)
+        self.assertIn("### model", output)
+        self.assertIn("| a | 1 | 2 | 1 |", output)
+        self.assertIn("| b | 2 | 2 | 0 |", output)
+        self.assertIn("### seed", output)
+
     def test_missing_weight(self):
         (self.base / "runs/a/seed-1/best.pt").unlink()
         result = self.report()
@@ -171,7 +204,9 @@ class MatrixTest(unittest.TestCase):
         md = self.base / "audit.md"
         csv_out = self.base / "audit.csv"
         self.assertEqual(main(["check", "-m", str(self.manifest_path), "--json", str(path), "--markdown", str(md), "--csv", str(csv_out)]), 0)
-        self.assertEqual(json.loads(path.read_text())["summary"]["complete_runs"], 4)
+        recorded = json.loads(path.read_text(encoding="utf-8"))
+        self.assertEqual(recorded["summary"]["complete_runs"], 4)
+        self.assertEqual(recorded["by_axis"]["model"]["a"]["expected_runs"], 2)
         self.assertTrue(md.exists())
         self.assertTrue(csv_out.exists())
 

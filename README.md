@@ -2,12 +2,13 @@
 
 ![Python](https://img.shields.io/badge/Python-3.9%2B-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
+[![CI](https://github.com/qys1523867834/seedgrid-audit/actions/workflows/ci.yml/badge.svg)](https://github.com/qys1523867834/seedgrid-audit/actions/workflows/ci.yml)
 
 **Check whether every planned machine learning experiment has the expected checkpoints and valid metrics — without importing PyTorch, downloading a model, or rerunning training.**
 
 SeedGrid Audit is a tiny, dependency-free (at runtime), read-only CLI for researchers who run many datasets × models × random seeds. It discovers missing experiment outputs, suspiciously small checkpoints, malformed metrics JSON, metric values outside expected ranges, and accidental filename collisions. It can produce a Markdown coverage matrix, JSON evidence, and CSV for CI or manual review.
 
-> **Project stage:** v0.1.0, newly created. This is a useful foundation and is *not* claimed to have existing downloads, external users, or independent adoption. Contributions and real-world testing are welcome.
+> **Project stage:** v0.1.1, newly created. This is a useful foundation and is *not* claimed to have existing downloads, external users, or independent adoption. Contributions and real-world testing are welcome.
 
 ## Why this tool?
 
@@ -25,7 +26,7 @@ cd seedgrid-audit
 python -m pip install -e .
 ```
 
-The clone URL becomes available **after you publish the repository** under your GitHub account. Alternatively, download the source ZIP, extract it, and run `python -m pip install -e .` within the extracted folder.
+Alternatively, download the source ZIP and run `python -m pip install -e .` from the extracted project root.
 
 ## Try the working demo
 
@@ -84,7 +85,7 @@ Sample output:
 Paper benchmark: 11/12 complete; 1 missing, 0 invalid artifacts
 ```
 
-The actual numbers depend on your real files. `--sha256` also hashes every existing artifact, which is useful for provenance but may take a long time with large checkpoints.
+The actual numbers depend on your real files. The JSON report includes `by_axis` completion counts for every model, dataset, and seed. The Markdown report adds **Coverage by axis** tables, making it easier to spot partial experiment groups. Counts measure file validation coverage, **not** model accuracy or reproducibility. CSV retains its per-run format. `--sha256` also hashes every existing artifact, which is useful for provenance but may take a long time with large checkpoints.
 
 ### Exit codes
 

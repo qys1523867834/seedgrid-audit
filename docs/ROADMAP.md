@@ -13,7 +13,7 @@ This document proposes areas for community discussion. Items are **not** commitm
 
 ## Proposed improvements (prioritize from real user feedback)
 
-- [ ] Per-dataset or per-model completion summary
+- [x] Per-dataset, per-model, and per-seed completion summary in JSON/Markdown (v0.1.1)
 - [ ] Support nested JSON metric keys (e.g., `eval.macro_f1`)
 - [ ] Allow optional artifacts and optional cells (e.g., deliberately skipped baselines)
 - [ ] Better outputs and file search for legacy folders
