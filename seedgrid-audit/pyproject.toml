@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "seedgrid-audit"
+version = "0.1.0"
+description = "Dependency-free audit of multi-seed ML experiment checkpoint and metric coverage"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { file = "LICENSE" }
+authors = [{ name = "SeedGrid contributors" }]
+keywords = ["machine-learning", "reproducibility", "checkpoints", "experiments", "audit"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "License :: OSI Approved :: MIT License",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = []
+
+[project.scripts]
+seedgrid = "seedgrid_audit.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
