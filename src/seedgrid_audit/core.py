@@ -218,6 +218,13 @@ def audit(manifest: dict, compute_hash: bool = False) -> dict:
         planned.append((axes, paths))
     summary = {"expected_runs": len(planned), "complete_runs": 0, "incomplete_runs": 0, "missing_artifacts": 0, "invalid_artifacts": 0}
     rows = []
+    by_axis = {
+        axis: {
+            value: {"expected_runs": 0, "complete_runs": 0, "incomplete_runs": 0}
+            for value in values
+        }
+        for axis, values in manifest["axes"].items()
+    }
     for axes, paths in planned:
         checked = {}
         for artifact, path in paths.items():
@@ -229,6 +236,10 @@ def audit(manifest: dict, compute_hash: bool = False) -> dict:
                 summary["invalid_artifacts"] += 1
         status = "complete" if all(item["status"] == "ok" for item in checked.values()) else "incomplete"
         summary[f"{status}_runs"] += 1
+        for axis, value in axes.items():
+            counts = by_axis[axis][value]
+            counts["expected_runs"] += 1
+            counts[f"{status}_runs"] += 1
         rows.append({"axes": axes, "status": status, "artifacts": checked})
     return {
         "schema_version": SCHEMA_VERSION,
@@ -237,6 +248,7 @@ def audit(manifest: dict, compute_hash: bool = False) -> dict:
         "root": str(root),
         "generated_at_utc": datetime.now(timezone.utc).isoformat(),
         "summary": summary,
+        "by_axis": by_axis,
         "axes": axis_names,
         "artifact_names": list(manifest["artifacts"]),
         "runs": rows,
@@ -270,6 +282,19 @@ def markdown_report(report: dict) -> str:
                 details.append(f"- **{label} / {name}:** " + "; ".join(item["issues"]))
     if details:
         lines += ["", "## Findings", ""] + details
+    if report.get("by_axis"):
+        lines += ["", "## Coverage by axis"]
+        for axis, values in report["by_axis"].items():
+            lines += [
+                "", f"### {axis}", "",
+                "| value | complete | expected | incomplete |",
+                "| --- | ---: | ---: | ---: |",
+            ]
+            for value, counts in values.items():
+                lines.append(
+                    f"| {value} | {counts['complete_runs']} | "
+                    f"{counts['expected_runs']} | {counts['incomplete_runs']} |"
+                )
     lines += ["", "_Reports are about artifact coverage and basic data integrity, not scientific validity._", ""]
     return "\n".join(lines)
 
